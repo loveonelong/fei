@@ -5,11 +5,14 @@ var
   less = require("gulp-less"),
   sequence = require('gulp-sequence'),
   del = require('del'),
+  cssmini = require('gulp-clean-css'),
   watchPath = require('gulp-watch-path'),
   webpack = require('webpack-stream'),
   named = require('vinyl-named'),
   through = require('through2'),
-  webpackconfig = require('./webpack.config.js')
+  webpackconfig = require('./webpack.config.js'),
+  rev = require('gulp-rev'),
+  revCollector = require('gulp-rev-collector')
 
 function getPostfix(str) {
   return str.substr(str.lastIndexOf(".")).toLowerCase()
@@ -20,7 +23,9 @@ var
   dev_path_views = fei.dev.dir + fei.dev.map.views,
   dev_path_componets = fei.dev.dir + fei.dev.map.components,
   dev_path_componet_modules = fei.dev.dir + fei.dev.map.component_modules,
-  release_path_views = fei.release.dir + fei.release.map.views + fei.version + '/'
+  release_path_views = fei.release.dir + fei.release.map.views + fei.version + '/',
+  release_path_componets = fei.release.dir + fei.release.map.components + fei.version + '/',
+  release_path_static = fei.release.dir + fei.release.map.static + fei.version + '/'
 
 gulp.task("browserSync-dev", function () {
   browserSync.init({
@@ -128,13 +133,23 @@ gulp.task("release-clean", function () {
   ]);
 })
 
-gulp.task("release-out",function(){
-  gulp.src(dev_path_views+"**/*.html")
+gulp.task("release-out", function () {
+  gulp.src(dev_path_views + "**/*.html")
     .pipe(gulp.dest(release_path_views))
 
-  gulp.src(dev_path_views+"**/*.css")
-    .pipe(gulp.dest(release_path_views))
+  gulp.src(dev_path_views+'**/*.css')
+    .pipe(cssmini())
+    .pipe(rev())
+    .pipe(gulp.dest(release_path_static))
+    .pipe(rev.manifest())
+    .pipe(gulp.dest(fei.release.dir+'./rev/'))
 })
 
+gulp.task('rev', function() {
+    gulp.src(release_path_views+'**/*')
+        .pipe(revCollector({manifest: fei.release.dir+'/rev/rev-mainfest.json'}))
+        .pipe(gulp.dest(release_path_views))
+});
+
 gulp.task("dev", sequence("dev-watch", ['dev-init', "browserSync-dev"]))
-gulp.task("release", sequence("release-clean","release-out"))
+gulp.task("release", sequence("release-clean", "release-out",'rev'))

@@ -1,0 +1,9 @@
+{
+  "home/index.css": "home/index-08b65ab4dd.css"
+}
+
+- root
+  - componets
+  - views
+    - home
+      - index.html
