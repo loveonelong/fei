@@ -1,0 +1,16 @@
+h1 {
+  color: royalblue;
+}
+* {
+  margin: 0;
+  padding: 0;
+}
+h1 {
+  margin: 0 auto;
+}
+a {
+  maring: 0;
+}
+b {
+  maring: 10;
+}
